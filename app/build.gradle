@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 32
+
+    defaultConfig {
+        applicationId "com.lindong.jnidemo1"
+        minSdk 25
+        targetSdk 32
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets.main{
+        jni.srcDirs=[]//禁用as自动生成mk
+    }
+
+    task ndkBuild(type: Exec, description: 'Compile JNI source via NDK') {
+        commandLine "C:\\Users\\Administrator\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\\ndk-build.cmd",//配置ndk的路径
+                'NDK_PROJECT_PATH=build/intermediates/ndk',//ndk默认的生成so的文件
+                'NDK_LIBS_OUT=src/main/jniLibs',//配置的我们想要生成的so文件所在的位置
+                'APP_BUILD_SCRIPT=src/main/jni/Android.mk',//指定项目以这个mk的方式
+                'NDK_APPLOCATION_MK=src/main/jni/Application.mk'//指定项目以这个mk的方式
+    }
+
+    tasks.withType(JavaCompile) { //使用ndkBuild
+        compileTask ->compileTask.dependsOn ndkBuild
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+}
